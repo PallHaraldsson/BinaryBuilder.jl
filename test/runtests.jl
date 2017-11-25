@@ -82,7 +82,7 @@ end
     begin
         build_path = tempname()
         mkpath(build_path)
-        prefix, ur = BinaryBuilder.setup_workspace(build_path, [], [], platform_key())
+        prefix, ur = BinaryBuilder.setup_workspace(build_path, [], [], [], platform_key())
         cd(joinpath(dirname(@__FILE__),"build_tests","libfoo")) do
             run(`cp $(readdir()) $(joinpath(prefix.path,"..","srcdir"))/`)
 
@@ -128,7 +128,7 @@ end
     begin
         build_path = tempname()
         mkpath(build_path)
-        prefix, ur = BinaryBuilder.setup_workspace(build_path, [], [], platform_key())
+        prefix, ur = BinaryBuilder.setup_workspace(build_path, [], [], [], platform_key())
         cd(joinpath(dirname(@__FILE__),"build_tests","libfoo")) do
             run(`cp $(readdir()) $(joinpath(prefix.path,"..","srcdir"))/`)
 

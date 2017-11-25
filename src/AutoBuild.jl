@@ -8,23 +8,30 @@ Runs the boiler plate code to download, build, and package a source package
 for multiple platforms.  `src_name`
 """
 function autobuild(dir::AbstractString, src_name::AbstractString,
-                   platforms::Vector, sources::Vector, script, products)
+                   platforms::Vector, sources::Vector, script, products;
+                   dependencies::Vector = AbstractDependency[])
     # First, download the source(s), store in ./downloads/
     downloads_dir = joinpath(dir, "downloads")
     try mkpath(downloads_dir) end
     for idx in 1:length(sources)
         src_url, src_hash = sources[idx]
-        if isfile(src_url)
-            # Immediately abspath() a src_url so we don't lose track of
-            # sources given to us with a relative path
-            src_path = abspath(src_url)
-
-            # And if this is a locally-sourced tarball, just verify
-            verify(src_path, src_hash; verbose=true)
-        else
-            # Otherwise, download and verify
+        if endswith(src_url, ".git")
             src_path = joinpath(downloads_dir, basename(src_url))
-            download_verify(src_url, src_hash, src_path; verbose=true)
+
+            repo = LibGit2.clone(src_url, src_path; isbare=true)
+        else
+            if isfile(src_url)
+                # Immediately abspath() a src_url so we don't lose track of
+                # sources given to us with a relative path
+                src_path = abspath(src_url)
+
+                # And if this is a locally-sourced tarball, just verify
+                verify(src_path, src_hash; verbose=true)
+            else
+                # Otherwise, download and verify
+                src_path = joinpath(downloads_dir, basename(src_url))
+                download_verify(src_url, src_hash, src_path; verbose=true)
+            end
         end
         sources[idx] = (src_path => src_hash)
     end
@@ -47,7 +54,7 @@ function autobuild(dir::AbstractString, src_name::AbstractString,
             # Convert from tuples to arrays, if need be
             src_paths = collect(src_paths)
             src_hashes = collect(src_hashes)
-            prefix, ur = setup_workspace(build_path, src_paths, src_hashes, platform; verbose=true)
+            prefix, ur = setup_workspace(build_path, src_paths, src_hashes, dependencies, platform; verbose=true)
 
             prdcts = products(prefix)
 
