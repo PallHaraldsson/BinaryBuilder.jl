@@ -1,3 +1,5 @@
+abstract type Runner; end
+
 """
     target_envs(target::String)
 Given a `target` (this term is used interchangeably with `triplet`), generate a
@@ -59,4 +61,8 @@ function target_envs(target::AbstractString)
     end
 
     return mapping
+end
+
+function preferred_runner()
+    Compat.Sys.islinux() ? UserNSRunner : QemuRunner
 end
